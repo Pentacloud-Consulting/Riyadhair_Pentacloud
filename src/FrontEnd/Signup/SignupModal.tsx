@@ -306,7 +306,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
       memberId: generatedMemberId,
       sfeerPoints: 0,
       levelPoints: 0,
-      tier: "The Sfeer Member",
+      tier: "Silver Tier",
     };
 
     if (typeof window !== "undefined") {

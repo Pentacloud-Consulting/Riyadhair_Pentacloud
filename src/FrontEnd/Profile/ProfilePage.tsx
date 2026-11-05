@@ -39,6 +39,8 @@ interface UserProfile {
 export default function ProfilePage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"my-sfeer" | "activity-history" | "personal-info">("my-sfeer");
+  const [selectedTier, setSelectedTier] = useState<"silver" | "gold" | "platinum">("silver");
+  const asOfDate = "5 Nov 2026";
   const [user, setUser] = useState<UserProfile>({
     isLoggedIn: true,
     name: "Zuhaib Khan",
@@ -53,7 +55,7 @@ export default function ProfilePage() {
     memberId: "SFR-838963",
     sfeerPoints: 0,
     levelPoints: 0,
-    tier: "The Sfeer Member",
+    tier: "Silver Tier",
   });
 
   // Load user data from localStorage
@@ -98,7 +100,7 @@ export default function ProfilePage() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  The Sfeer
+                  Sfeer
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/30 text-purple-200 border border-purple-400/20">
                   Guest Club
@@ -213,46 +215,220 @@ export default function ProfilePage() {
             {/* Top Grid: Digital Loyalty Card & Quick Actions */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
               
-              {/* Digital Sfeer Card (Luxury Riyadh Air Aesthetic) */}
-              <div className="lg:col-span-7 relative overflow-hidden rounded-[28px] p-7 sm:p-8 bg-gradient-to-tr from-[#170529] via-[#330c58] to-[#1c0734] text-white shadow-xl shadow-purple-950/20 border border-purple-500/20 flex flex-col justify-between min-h-[220px]">
-                {/* Metallic holographic ribbon effect */}
-                <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-purple-400/10 via-transparent to-transparent rounded-full blur-2xl pointer-events-none" />
-
-                <div className="flex items-start justify-between relative z-10">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-purple-300">
-                      Riyadh Air
-                    </span>
-                    <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2 mt-0.5">
-                      <span>SFEER</span>
-                      <span className="text-xs font-normal text-purple-200 px-2 py-0.5 bg-white/10 rounded-full">
-                        Silver Tier
-                      </span>
-                    </h3>
+              {/* Left Column: Tier Selection Tabs & Matte Loyalty Card */}
+              <div className="lg:col-span-7 flex flex-col space-y-3">
+                
+                {/* 3 Airways Tier Tabs (Silver, Gold, Platinum) */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-2xl border border-gray-200/70">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTier("silver")}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        selectedTier === "silver"
+                          ? "bg-orange-500 text-white shadow-sm"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      Silver
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTier("gold")}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        selectedTier === "gold"
+                          ? "bg-orange-500 text-white shadow-sm"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      Gold
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTier("platinum")}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        selectedTier === "platinum"
+                          ? "bg-orange-500 text-white shadow-sm"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      Platinum
+                    </button>
                   </div>
 
-                  <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-                    <Award className="w-5 h-5 text-purple-200" />
-                  </div>
+                  <span className="text-[11px] font-medium text-gray-500 hidden sm:inline">
+                    Digital Membership Card
+                  </span>
                 </div>
 
-                <div className="relative z-10 mt-6 pt-4 border-t border-white/10 flex items-end justify-between">
-                  <div>
-                    <p className="text-[10px] uppercase font-semibold text-purple-200/70 tracking-wider">
-                      Member Name
-                    </p>
-                    <p className="text-sm sm:text-base font-bold text-white uppercase tracking-wide">
-                      {user.name}
-                    </p>
+                {/* Digital Sfeer Card (Orange Box) */}
+                <div className="relative overflow-hidden rounded-[28px] p-7 sm:p-8 flex flex-col justify-between w-full h-[270px] sm:h-[280px] bg-gradient-to-br from-[#FF7A00] via-[#FF6200] to-[#E64D00] text-white border border-orange-400/30 shadow-xl shadow-orange-500/25 shrink-0 transition-all duration-300">
+                  {/* Subtle Glow Overlay */}
+                  <div className="absolute inset-0 bg-white/[0.08] backdrop-blur-[1px] pointer-events-none" />
+                  <div className="absolute -top-24 -right-24 w-60 h-60 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+
+                  {/* Top Row: Brand & Tier Badge */}
+                  <div className="flex items-start justify-between relative z-10">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-white/80">
+                        Riyadh Air
+                      </span>
+                      <h3 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2 mt-0.5 text-white">
+                        <span>SFEER</span>
+                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize shadow-sm bg-black/25 text-white backdrop-blur-sm border border-white/20">
+                          {selectedTier} Tier
+                        </span>
+                      </h3>
+                    </div>
+
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm bg-white/15 backdrop-blur-md text-white border-white/25">
+                      <Award className="w-5 h-5" />
+                    </div>
                   </div>
 
-                  <div className="text-right">
-                    <p className="text-[10px] uppercase font-semibold text-purple-200/70 tracking-wider">
-                      Membership No.
-                    </p>
-                    <p className="font-mono text-sm sm:text-base font-bold text-white">
-                      {user.memberId}
-                    </p>
+                  {/* Middle: Tier Miles & Precision Plane Progress Track */}
+                  <div className="relative z-10 my-4 py-1">
+                    <div className="flex items-center justify-between text-xs mb-2">
+                      <div className="flex items-center gap-1.5 font-medium text-white">
+                        <span className="font-bold text-sm text-white">
+                          {selectedTier === "silver" ? "0" : selectedTier === "gold" ? "25,000" : "50,000"}
+                        </span>
+                        <span className="text-[11px] sm:text-xs text-white/85">
+                          Tier Miles earned as of {asOfDate}
+                        </span>
+                      </div>
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full border border-white/30 bg-white/15 text-white backdrop-blur-sm">
+                        {selectedTier === "silver" ? "Goal: Gold" : selectedTier === "gold" ? "Goal: Platinum" : "VIP Elite"}
+                      </span>
+                    </div>
+
+                    {/* Precision Vector Progress Track */}
+                    <div className="relative flex items-center w-full py-2">
+                      <svg className="w-full h-8 overflow-visible" viewBox="0 0 400 24" fill="none">
+                        {/* 1. Inactive Track Line */}
+                        <line
+                          x1="14"
+                          y1="12"
+                          x2="386"
+                          y2="12"
+                          stroke="rgba(255,255,255,0.35)"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+
+                        {/* 2. Active White Stem Line */}
+                        <line
+                          x1="14"
+                          y1="12"
+                          x2={selectedTier === "silver" ? "43" : selectedTier === "gold" ? "187" : "363"}
+                          y2="12"
+                          stroke="#ffffff"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          className="transition-all duration-700 ease-out"
+                        />
+
+                        {/* 3. Left Concentric Circle (◎) */}
+                        <circle
+                          cx="14"
+                          cy="12"
+                          r="7.5"
+                          stroke="#ffffff"
+                          strokeWidth="2.5"
+                          fill="transparent"
+                        />
+                        <circle cx="14" cy="12" r="3" fill="#ffffff" />
+
+                        {/* 4. Midpoint Milestone (Gold) */}
+                        <circle
+                          cx="200"
+                          cy="12"
+                          r="5"
+                          stroke={
+                            selectedTier === "gold" || selectedTier === "platinum"
+                              ? "#ffffff"
+                              : "rgba(255,255,255,0.4)"
+                          }
+                          strokeWidth="2"
+                          fill="transparent"
+                          className="transition-colors duration-300"
+                        />
+                        <circle
+                          cx="200"
+                          cy="12"
+                          r="1.8"
+                          fill={
+                            selectedTier === "gold" || selectedTier === "platinum"
+                              ? "#ffffff"
+                              : "rgba(255,255,255,0.6)"
+                          }
+                          className="transition-colors duration-300"
+                        />
+
+                        {/* 5. Right Milestone (Platinum Circle) */}
+                        <circle
+                          cx="386"
+                          cy="12"
+                          r="7.5"
+                          stroke={selectedTier === "platinum" ? "#ffffff" : "rgba(255,255,255,0.4)"}
+                          strokeWidth="2.5"
+                          fill="transparent"
+                          className="transition-colors duration-300"
+                        />
+                        <circle
+                          cx="386"
+                          cy="12"
+                          r="3"
+                          fill={selectedTier === "platinum" ? "#ffffff" : "rgba(255,255,255,0.5)"}
+                          className="transition-colors duration-300"
+                        />
+
+                        {/* 6. Clean Jet Airplane Facing Right (→) */}
+                        <g
+                          transform={`translate(${selectedTier === "silver" ? 42 : selectedTier === "gold" ? 186 : 362}, 0)`}
+                          className="transition-all duration-700 ease-out"
+                        >
+                          <path
+                            d="M 23 12 L 15 0.5 L 11 0.5 L 14 10 L 4 10 L 2.5 6 L 0 6 L 1 12 L 0 18 L 2.5 18 L 4 14 L 14 14 L 11 23.5 L 15 23.5 Z"
+                            fill="#ffffff"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+
+                    {/* 3 Tier Labels under track (Silver, Gold, Platinum) */}
+                    <div className="flex items-center justify-between text-[10px] font-medium pt-0.5">
+                      <span className={selectedTier === "silver" ? "font-bold text-white" : "text-white/75"}>
+                        Silver
+                      </span>
+                      <span className={selectedTier === "gold" ? "font-bold text-white" : "text-white/75"}>
+                        Gold (25,000)
+                      </span>
+                      <span className={selectedTier === "platinum" ? "font-bold text-white" : "text-white/75"}>
+                        Platinum (50,000)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bottom Row: Member Name & Membership No. */}
+                  <div className="relative z-10 pt-3 border-t border-white/20 flex items-end justify-between text-white">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold tracking-wider text-white/75">
+                        Member Name
+                      </p>
+                      <p className="text-sm sm:text-base font-bold uppercase tracking-wide text-white">
+                        {user.name}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-[10px] uppercase font-bold tracking-wider text-white/75">
+                        Membership No.
+                      </p>
+                      <p className="font-mono text-sm sm:text-base font-bold tracking-wider text-white">
+                        {user.memberId}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
