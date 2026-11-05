@@ -708,17 +708,17 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                         <CalendarIcon className="w-4 h-4 text-gray-400" />
                       </button>
 
-                      {/* Custom UI Datepicker (In-flow, never clipped, full width) */}
+                      {/* Custom UI Datepicker (Compact Floating Popup) */}
                       {isDatePickerOpen && (
                         <div
-                          className="mt-2.5 w-full bg-white rounded-2xl border border-gray-200 shadow-xl p-4 z-20 animate-in fade-in-50 zoom-in-95 duration-200"
+                          className="absolute top-full left-0 mt-2 w-[285px] bg-white rounded-2xl shadow-2xl ring-1 ring-black/10 border border-gray-150 p-3.5 z-50 animate-in fade-in-50 zoom-in-95 duration-150"
                           onClick={(e) => {
                             e.stopPropagation();
                             setIsMonthOpen(false);
                             setIsYearOpen(false);
                           }}
                         >
-                          <div className="flex items-center justify-between gap-2 pb-3 border-b border-gray-100 relative">
+                          <div className="flex items-center justify-between gap-1 pb-2.5 border-b border-gray-100 relative">
                             <button
                               type="button"
                               onClick={(e) => {
@@ -732,13 +732,13 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                                   setCalendarMonth((m) => m - 1);
                                 }
                               }}
-                              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
+                              className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
                               aria-label="Previous month"
                             >
                               <ChevronLeft className="w-4 h-4" />
                             </button>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5">
                               {/* Custom Month Menu */}
                               <div className="relative">
                                 <button
@@ -748,15 +748,15 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                                     setIsMonthOpen(!isMonthOpen);
                                     setIsYearOpen(false);
                                   }}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-xs font-bold text-gray-800 transition-colors cursor-pointer border border-gray-200/70"
+                                  className="flex items-center gap-1 px-2.5 py-1 bg-gray-50 hover:bg-gray-100 rounded-lg text-xs font-semibold text-gray-800 transition-colors cursor-pointer border border-gray-200/70"
                                 >
                                   <span>{months[calendarMonth]}</span>
-                                  <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${isMonthOpen ? "rotate-180 text-[#742da7]" : ""}`} />
+                                  <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${isMonthOpen ? "rotate-180 text-[#742da7]" : ""}`} />
                                 </button>
 
                                 {isMonthOpen && (
                                   <div
-                                    className="absolute top-full left-0 mt-1.5 w-36 bg-white rounded-xl shadow-2xl ring-1 ring-black/5 p-1 z-50 max-h-[190px] overflow-y-auto animate-in fade-in-50 zoom-in-95 duration-150"
+                                    className="absolute top-full left-0 mt-1 w-32 bg-white rounded-xl shadow-2xl ring-1 ring-black/10 p-1 z-50 max-h-[160px] overflow-y-auto animate-in fade-in-50 zoom-in-95 duration-150"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     {months.map((m, idx) => (
@@ -767,14 +767,14 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                                           setCalendarMonth(idx);
                                           setIsMonthOpen(false);
                                         }}
-                                        className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg text-left transition-colors cursor-pointer ${
+                                        className={`w-full flex items-center justify-between px-2 py-1.5 text-xs rounded-lg text-left transition-colors cursor-pointer ${
                                           calendarMonth === idx
                                             ? "bg-purple-50 text-[#742da7] font-bold"
                                             : "text-gray-700 hover:bg-gray-50"
                                         }`}
                                       >
                                         <span>{m}</span>
-                                        {calendarMonth === idx && <Check className="w-3.5 h-3.5 text-[#742da7]" />}
+                                        {calendarMonth === idx && <Check className="w-3 h-3 text-[#742da7]" />}
                                       </button>
                                     ))}
                                   </div>
@@ -790,15 +790,15 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                                     setIsYearOpen(!isYearOpen);
                                     setIsMonthOpen(false);
                                   }}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-xs font-bold text-gray-800 transition-colors cursor-pointer border border-gray-200/70"
+                                  className="flex items-center gap-1 px-2.5 py-1 bg-gray-50 hover:bg-gray-100 rounded-lg text-xs font-semibold text-gray-800 transition-colors cursor-pointer border border-gray-200/70"
                                 >
                                   <span>{calendarYear}</span>
-                                  <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${isYearOpen ? "rotate-180 text-[#742da7]" : ""}`} />
+                                  <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${isYearOpen ? "rotate-180 text-[#742da7]" : ""}`} />
                                 </button>
 
                                 {isYearOpen && (
                                   <div
-                                    className="absolute top-full right-0 mt-1.5 w-28 bg-white rounded-xl shadow-2xl ring-1 ring-black/5 p-1 z-50 max-h-[210px] overflow-y-auto animate-in fade-in-50 zoom-in-95 duration-150"
+                                    className="absolute top-full right-0 mt-1 w-24 bg-white rounded-xl shadow-2xl ring-1 ring-black/10 p-1 z-50 max-h-[160px] overflow-y-auto animate-in fade-in-50 zoom-in-95 duration-150"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     {years.map((y) => (
@@ -809,14 +809,14 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                                           setCalendarYear(y);
                                           setIsYearOpen(false);
                                         }}
-                                        className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg text-left transition-colors cursor-pointer ${
+                                        className={`w-full flex items-center justify-between px-2 py-1.5 text-xs rounded-lg text-left transition-colors cursor-pointer ${
                                           calendarYear === y
                                             ? "bg-purple-50 text-[#742da7] font-bold"
                                             : "text-gray-700 hover:bg-gray-50"
                                         }`}
                                       >
                                         <span>{y}</span>
-                                        {calendarYear === y && <Check className="w-3.5 h-3.5 text-[#742da7]" />}
+                                        {calendarYear === y && <Check className="w-3 h-3 text-[#742da7]" />}
                                       </button>
                                     ))}
                                   </div>
@@ -837,14 +837,14 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                                   setCalendarMonth((m) => m + 1);
                                 }
                               }}
-                              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
+                              className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
                               aria-label="Next month"
                             >
                               <ChevronRight className="w-4 h-4" />
                             </button>
                           </div>
 
-                          <div className="grid grid-cols-7 text-center text-[10px] font-bold text-gray-400 py-2.5 uppercase tracking-wider">
+                          <div className="grid grid-cols-7 text-center text-[10px] font-bold text-gray-400 py-2 uppercase tracking-wider">
                             <span>Su</span>
                             <span>Mo</span>
                             <span>Tu</span>
@@ -856,7 +856,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
 
                           <div className="grid grid-cols-7 gap-1 text-center text-xs">
                             {Array.from({ length: startDay }).map((_, i) => (
-                              <div key={`empty-${i}`} className="p-1.5" />
+                              <div key={`empty-${i}`} className="p-1" />
                             ))}
 
                             {Array.from({ length: daysCount }).map((_, i) => {
@@ -870,7 +870,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                                     setSelectedDay(day);
                                     setIsDatePickerOpen(false);
                                   }}
-                                  className={`w-8 h-8 mx-auto flex items-center justify-center rounded-full font-medium transition-all cursor-pointer ${
+                                  className={`w-7 h-7 mx-auto flex items-center justify-center rounded-full text-xs font-medium transition-all cursor-pointer ${
                                     isSelected
                                       ? "bg-[#742da7] text-white font-bold shadow-md shadow-purple-900/20 scale-105"
                                       : "text-gray-700 hover:bg-purple-50 hover:text-[#742da7]"
@@ -882,18 +882,18 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                             })}
                           </div>
 
-                          <div className="pt-3 mt-2 border-t border-gray-100 flex items-center justify-between text-xs">
+                          <div className="pt-2.5 mt-2 border-t border-gray-100 flex items-center justify-between text-xs">
                             <button
                               type="button"
                               onClick={() => {
                                 setSelectedDay(null);
                               }}
-                              className="text-gray-400 hover:text-gray-700 font-medium cursor-pointer"
+                              className="text-gray-400 hover:text-gray-700 font-medium cursor-pointer text-[11px]"
                             >
                               Clear
                             </button>
-                            <span className="text-[11px] text-[#742da7] font-semibold">
-                              {selectedDay ? `${selectedDay} ${months[calendarMonth]} ${calendarYear}` : "Select a date"}
+                            <span className="text-[11px] text-[#742da7] font-semibold truncate max-w-[130px]">
+                              {selectedDay ? `${selectedDay} ${months[calendarMonth].slice(0, 3)} ${calendarYear}` : "Select a date"}
                             </span>
                             <button
                               type="button"
