@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, XCircle, X, Sparkles, ArrowRight } from "lucide-react";
+import { CheckCircle2, XCircle, X, ArrowRight } from "lucide-react";
 
 export interface PopupProps {
   isOpen: boolean;
@@ -47,13 +47,8 @@ export default function NotificationPopup({
         {/* Icon Header */}
         <div className="flex justify-center mb-5">
           {isSuccess ? (
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#6e29a9] to-purple-500 flex items-center justify-center text-white shadow-lg shadow-purple-900/25">
-                <CheckCircle2 className="w-8 h-8 text-white" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-purple-300 flex items-center justify-center text-white animate-bounce">
-                <Sparkles className="w-3.5 h-3.5 text-purple-900" />
-              </div>
+            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#6e29a9] to-purple-500 flex items-center justify-center text-white shadow-lg shadow-purple-900/25">
+              <CheckCircle2 className="w-8 h-8 text-white" />
             </div>
           ) : (
             <div className="w-16 h-16 rounded-full bg-red-50 border border-red-200 flex items-center justify-center text-red-600 shadow-md">

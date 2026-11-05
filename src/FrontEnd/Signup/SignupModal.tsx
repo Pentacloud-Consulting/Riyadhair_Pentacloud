@@ -12,10 +12,10 @@ import {
   Mail,
   Phone,
   Check,
-  Lock,
-  Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import NotificationPopup from "@/FrontEnd/Popup/NotificationPopup";
+import OtpAlertPopup from "@/FrontEnd/Popup/OtpAlertPopup";
 
 interface CountryOption {
   name: string;
@@ -57,7 +57,7 @@ interface SignupModalProps {
 }
 
 export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
-  // Steps: 1 = Registration Details, 2 = OTP Dual Verification (Email + Mobile)
+  // Steps: 1 = Registration Details, 2 = Dual OTP Verification & Complete
   const [step, setStep] = useState<1 | 2>(1);
 
   // Form Fields
@@ -68,6 +68,25 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
   const [selectedCountry, setSelectedCountry] = useState("India");
   const [phoneCode, setPhoneCode] = useState("+91");
   const [phoneNumber, setPhoneNumber] = useState("");
+
+  // Marketing & Preferences Opt-in (Matching Emirates/Sfeer reference)
+  const [optInRiyadhAir, setOptInRiyadhAir] = useState(false);
+  const [optInPartners, setOptInPartners] = useState(false);
+
+  // Human Verification States (Required before Step 1 completes)
+  const [isHumanVerified, setIsHumanVerified] = useState(false);
+  const [isVerifyingHuman, setIsVerifyingHuman] = useState(false);
+
+  // OTP Alert Popups (Email sent alert / Mobile sent alert)
+  const [otpPopupState, setOtpPopupState] = useState<{
+    isOpen: boolean;
+    stage: "email-sent" | "mobile-sent";
+    destination: string;
+  }>({
+    isOpen: false,
+    stage: "email-sent",
+    destination: "",
+  });
 
   // Custom UI Dropdown States
   const [isTitleOpen, setIsTitleOpen] = useState(false);
@@ -87,7 +106,22 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
     ? `${String(selectedDay).padStart(2, "0")} / ${String(calendarMonth + 1).padStart(2, "0")} / ${calendarYear}`
     : "";
 
-  // Dual OTP States: 1. Email OTP, 2. Mobile OTP
+  // Step 1 Validation: All required fields MUST be filled + human verification
+  const isEmailValid = email.trim().length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const isPhoneValid = phoneNumber.trim().length >= 7;
+  const isStep1Valid =
+    isHumanVerified &&
+    title.trim() !== "" &&
+    firstName.trim().length >= 2 &&
+    lastName.trim().length >= 2 &&
+    isEmailValid &&
+    isPhoneValid &&
+    selectedDay !== null;
+
+  // Step 2 OTP Method: User chooses ANY 1 type (Email OR Mobile)
+  const [otpMethod, setOtpMethod] = useState<"email" | "mobile">("email");
+
+  // OTP States: 1. Email OTP, 2. Mobile OTP
   const [emailOtp, setEmailOtp] = useState(["", "", "", ""]);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [emailOtpError, setEmailOtpError] = useState("");
@@ -95,6 +129,9 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
   const [mobileOtp, setMobileOtp] = useState(["", "", "", ""]);
   const [isMobileVerified, setIsMobileVerified] = useState(false);
   const [mobileOtpError, setMobileOtpError] = useState("");
+
+  // Either Email OR Mobile verified is sufficient to create account
+  const isAnyOtpVerified = isEmailVerified || isMobileVerified;
 
   const emailOtpRefs = [
     useRef<HTMLInputElement>(null),
@@ -139,12 +176,17 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
   useEffect(() => {
     if (!isOpen) {
       setStep(1);
+      setOtpMethod("email");
       setEmailOtp(["", "", "", ""]);
       setMobileOtp(["", "", "", ""]);
       setIsEmailVerified(false);
       setIsMobileVerified(false);
       setEmailOtpError("");
       setMobileOtpError("");
+      setIsHumanVerified(false);
+      setIsVerifyingHuman(false);
+      setOptInRiyadhAir(false);
+      setOptInPartners(false);
       setIsTitleOpen(false);
       setIsCountryOpen(false);
       setIsPhoneCodeOpen(false);
@@ -159,6 +201,26 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
     setSelectedCountry(country.name);
     setPhoneCode(country.code);
     setIsCountryOpen(false);
+  };
+
+  // Human verification toggle with realistic brief spinner
+  const handleToggleHumanVerification = () => {
+    if (isHumanVerified || isVerifyingHuman) return;
+    setIsVerifyingHuman(true);
+    setTimeout(() => {
+      setIsVerifyingHuman(false);
+      setIsHumanVerified(true);
+    }, 600);
+  };
+
+  // Step 1 -> Trigger Email OTP Sent Alert -> Move to Step 2
+  const handleProceedToOtp = () => {
+    if (!isStep1Valid) return;
+    setOtpPopupState({
+      isOpen: true,
+      stage: "email-sent",
+      destination: email || "user@example.com",
+    });
   };
 
   // Handle Email OTP input
@@ -176,6 +238,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
     // Auto-verify if "0000" is entered
     if (updated.join("") === "0000") {
       setIsEmailVerified(true);
+      setEmailOtpError("");
     }
   };
 
@@ -184,7 +247,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
       setIsEmailVerified(true);
       setEmailOtpError("");
     } else {
-      setEmailOtpError("Invalid code. Use mock code 0000");
+      setEmailOtpError("Invalid verification code. Please check and try again.");
     }
   };
 
@@ -203,6 +266,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
     // Auto-verify if "0000" is entered
     if (updated.join("") === "0000") {
       setIsMobileVerified(true);
+      setMobileOtpError("");
     }
   };
 
@@ -211,7 +275,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
       setIsMobileVerified(true);
       setMobileOtpError("");
     } else {
-      setMobileOtpError("Invalid code. Use mock code 0000");
+      setMobileOtpError("Invalid verification code. Please check and try again.");
     }
   };
 
@@ -221,30 +285,48 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
   const daysCount = getDaysInMonth(calendarMonth, calendarYear);
   const startDay = getFirstDayOfMonth(calendarMonth, calendarYear);
 
-  // Final Completion Trigger
+  // Final Completion Trigger (Completes upon verifying either Email or Mobile OTP)
   const handleCompleteRegistration = () => {
-    if (isEmailVerified && isMobileVerified) {
-      setPopupState({
-        isOpen: true,
-        type: "success",
-        title: "Welcome to Sfeer & Riyadh Air!",
-        message: `Congratulations ${title ? `${title} ` : ""}${firstName || "Guest"}! Both your email and mobile have been verified. Your Sfeer Club privileges are now unlocked.`,
-        memberId: "SFR-" + Math.floor(100000 + Math.random() * 900000),
-      });
-    } else {
-      setPopupState({
-        isOpen: true,
-        type: "error",
-        title: "Verification Required",
-        message: "Please complete both Email and Mobile phone OTP verifications using code 0000.",
-      });
+    if (!isAnyOtpVerified) return;
+    const generatedMemberId = "SFR-" + Math.floor(100000 + Math.random() * 900000);
+    const fullName = firstName ? `${firstName} ${lastName}`.trim() : "Zuhaib Khan";
+    const initials = (firstName ? firstName[0] + (lastName ? lastName[0] : "") : "ZU").toUpperCase();
+
+    const userSession = {
+      isLoggedIn: true,
+      name: fullName,
+      initials: initials,
+      title: title || "Mr",
+      firstName: firstName || "Zuhaib",
+      lastName: lastName || "Khan",
+      email: email || "zuhaib@riyadhair.com",
+      phone: `(${phoneCode}) ${phoneNumber || "9876543210"}`,
+      country: selectedCountry || "India",
+      dob: formattedDob || "24 / 07 / 1996",
+      memberId: generatedMemberId,
+      sfeerPoints: 0,
+      levelPoints: 0,
+      tier: "The Sfeer Member",
+    };
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("riyadh_user", JSON.stringify(userSession));
+      window.dispatchEvent(new Event("riyadh-auth-changed"));
     }
+
+    setPopupState({
+      isOpen: true,
+      type: "success",
+      title: "Welcome to Sfeer & Riyadh Air!",
+      message: `Congratulations ${title ? `${title} ` : ""}${firstName || "Zuhaib"}! Your Sfeer account has been successfully created. Your boarding passes, tickets, and miles will be linked to your membership.`,
+      memberId: generatedMemberId,
+    });
   };
 
   if (!isOpen) return null;
 
-  // Left image switches to image copy.png on OTP step
-  const leftImageSrc = step === 2 ? "/images/image copy.png" : "/images/image.png";
+  // Left image switches to image copy1.png on Step 2 (OTP)
+  const leftImageSrc = step === 2 ? "/images/image copy1.png" : "/images/image1.png";
 
   return (
     <>
@@ -296,7 +378,8 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                   </button>
                 )}
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">
-                  Join Sfeer | Riyadh Air
+                  {step === 1 && "Log in | Join"}
+                  {step === 2 && "Join Sfeer | OTP Verification"}
                 </h2>
               </div>
 
@@ -310,7 +393,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
               </button>
             </div>
 
-            {/* 2. Step Indicator Progress Bar (Light Purple Theme) */}
+            {/* 2. Step Indicator Progress Bar (2 Steps in Light Purple Theme) */}
             <div className="px-6 sm:px-8 pt-3 pb-1 shrink-0">
               <div className="flex items-center gap-2">
                 <div className={`h-1.5 flex-1 rounded-full transition-all ${step >= 1 ? "bg-[#742da7]" : "bg-gray-100"}`} />
@@ -827,14 +910,97 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                     </div>
                   </div>
 
+                  {/* Marketing & Terms Confirmations (Matching Emirates/Sfeer reference) */}
+                  <div className="pt-2 pb-1 space-y-3">
+                    <label className="flex items-start gap-2.5 cursor-pointer text-left select-none">
+                      <input
+                        type="checkbox"
+                        checked={optInRiyadhAir}
+                        onChange={(e) => setOptInRiyadhAir(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 rounded text-[#742da7] focus:ring-purple-400 cursor-pointer accent-[#742da7] shrink-0"
+                      />
+                      <span className="text-[11px] text-gray-500 leading-relaxed">
+                        Sign up to receive Riyadh Air newsletters and special offer emails. You can unsubscribe at any time via the link in our emails, by updating your Riyadh Air Sfeer account preferences or by contacting us. For more details on how we use your personal information, please see our{" "}
+                        <span className="underline hover:text-gray-900 cursor-pointer">privacy policy</span>.
+                      </span>
+                    </label>
+
+                    <label className="flex items-start gap-2.5 cursor-pointer text-left select-none">
+                      <input
+                        type="checkbox"
+                        checked={optInPartners}
+                        onChange={(e) => setOptInPartners(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 rounded text-[#742da7] focus:ring-purple-400 cursor-pointer accent-[#742da7] shrink-0"
+                      />
+                      <span className="text-[11px] text-gray-500 leading-relaxed">
+                        Sign up to receive partner airline newsletters and special offer emails. Your name and email address will be shared with partners for this purpose. Unsubscribe at any time via relevant link in partner emails, by updating your Riyadh Air Sfeer account preferences or by contacting Riyadh Air or partner airlines. For more details, please see our{" "}
+                        <span className="underline hover:text-gray-900 cursor-pointer">privacy policy</span>.
+                      </span>
+                    </label>
+
+                    <p className="text-[11px] text-gray-500 pt-1 leading-relaxed">
+                      By creating an account you are agreeing to the{" "}
+                      <span className="underline hover:text-gray-900 cursor-pointer font-medium">Sfeer programme rules ↗</span>{" "}
+                      and our{" "}
+                      <span className="underline hover:text-gray-900 cursor-pointer font-medium">privacy policy ↗</span>.
+                    </p>
+                  </div>
+
+                  {/* Human Verification Widget (Cloudflare Turnstile style) */}
+                  <div className="pt-1">
+                    <div
+                      onClick={handleToggleHumanVerification}
+                      className={`w-full p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between select-none ${
+                        isHumanVerified
+                          ? "bg-purple-50/50 border-purple-200"
+                          : "bg-gray-50/80 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
+                            isHumanVerified
+                              ? "bg-[#742da7] border-[#742da7] text-white shadow-sm"
+                              : isVerifyingHuman
+                              ? "border-[#742da7] bg-white"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {isVerifyingHuman ? (
+                            <div className="w-3.5 h-3.5 border-2 border-[#742da7] border-t-transparent rounded-full animate-spin" />
+                          ) : isHumanVerified ? (
+                            <Check className="w-4 h-4 text-white stroke-[3]" />
+                          ) : null}
+                        </div>
+
+                        <div>
+                          <p className="text-xs font-semibold text-gray-800">
+                            {isHumanVerified
+                              ? "Security check passed"
+                              : isVerifyingHuman
+                              ? "Verifying security..."
+                              : "Confirm that you are human"}
+                          </p>
+                          <p className="text-[10px] text-gray-400">
+                            Protected by Sfeer Security
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <ShieldCheck className={`w-5 h-5 ${isHumanVerified ? "text-[#742da7]" : "text-gray-300"}`} />
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               )}
 
               {/* ========================================================= */}
-              {/* STEP 2: Dual Verification (Email OTP + Mobile OTP locked) */}
+              {/* STEP 2: Verification (Email OR Mobile - ANY 1 TYPE)       */}
               {/* ========================================================= */}
               {step === 2 && (
-                <div className="space-y-6 py-2 animate-in fade-in-50 duration-200">
+                <div className="space-y-4 py-2 animate-in fade-in-50 duration-200">
                   
                   {/* Top Intro */}
                   <div>
@@ -842,164 +1008,212 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
                       OTP Verification
                     </h3>
                     <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                      Verify your email address first to unlock your phone number verification.
+                      Choose any 1 method (Email or Mobile) to verify your account.
                     </p>
                   </div>
 
-                  {/* SECTION 1: Email OTP Verification */}
-                  <div className={`p-4 rounded-2xl border transition-all duration-300 ${
-                    isEmailVerified
-                      ? "bg-emerald-50/60 border-emerald-200"
-                      : "bg-purple-50/40 border-purple-100"
-                  }`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Mail className={`w-4 h-4 ${isEmailVerified ? "text-emerald-600" : "text-[#742da7]"}`} />
-                        <span className="text-xs font-bold text-gray-900">1. Email OTP</span>
-                      </div>
-                      {isEmailVerified ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-full">
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Verified</span>
-                        </span>
-                      ) : (
-                        <span className="text-[11px] text-gray-500 font-medium">
-                          Sent to <span className="font-semibold text-gray-800">{email || "your email"}</span>
-                        </span>
+                  {/* 1 Type Selector: Email or Mobile (Any 1) */}
+                  <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200/60">
+                    <button
+                      type="button"
+                      onClick={() => setOtpMethod("email")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                        otpMethod === "email"
+                          ? "bg-white text-[#742da7] shadow-sm font-bold"
+                          : "text-gray-500 hover:text-gray-900"
+                      }`}
+                    >
+                      <Mail className="w-4 h-4" />
+                      <span>Email OTP</span>
+                      {isEmailVerified && (
+                        <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3] ml-1" />
                       )}
-                    </div>
+                    </button>
 
-                    {!isEmailVerified ? (
-                      <div className="space-y-3 mt-3">
-                        <div className="flex justify-center gap-3">
-                          {emailOtp.map((digit, idx) => (
-                            <input
-                              key={`email-${idx}`}
-                              ref={emailOtpRefs[idx]}
-                              type="text"
-                              maxLength={1}
-                              value={digit}
-                              onChange={(e) => handleEmailOtpChange(idx, e.target.value)}
-                              className="w-11 h-12 text-center text-lg font-bold text-[#742da7] bg-white border border-gray-200 rounded-xl focus:border-[#742da7] focus:outline-none shadow-sm"
-                            />
-                          ))}
-                        </div>
-
-                        {emailOtpError && (
-                          <p className="text-center text-xs text-red-600 font-medium">{emailOtpError}</p>
-                        )}
-
-                        <div className="flex items-center justify-between text-xs pt-1">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEmailOtp(["0", "0", "0", "0"]);
-                              setIsEmailVerified(true);
-                            }}
-                            className="text-[#742da7] font-semibold hover:underline cursor-pointer"
-                          >
-                            Fill mock (0000)
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleVerifyEmail}
-                            className="px-4 py-1.5 rounded-full bg-[#742da7] text-white font-semibold text-xs hover:bg-[#8538bc] transition-colors cursor-pointer"
-                          >
-                            Verify Email
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-emerald-800 font-medium mt-1">
-                        ✓ Email confirmed successfully. Mobile verification is now unlocked below!
-                      </p>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setOtpMethod("mobile")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                        otpMethod === "mobile"
+                          ? "bg-white text-[#742da7] shadow-sm font-bold"
+                          : "text-gray-500 hover:text-gray-900"
+                      }`}
+                    >
+                      <Phone className="w-4 h-4" />
+                      <span>Mobile OTP</span>
+                      {isMobileVerified && (
+                        <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3] ml-1" />
+                      )}
+                    </button>
                   </div>
 
-                  {/* SECTION 2: Mobile Phone OTP Verification (DISABLED UNTIL EMAIL IS VERIFIED) */}
-                  <div className={`p-4 rounded-2xl border transition-all duration-300 ${
-                    !isEmailVerified
-                      ? "bg-gray-50 border-gray-200 opacity-60"
-                      : isMobileVerified
-                      ? "bg-emerald-50/60 border-emerald-200"
-                      : "bg-purple-50/40 border-purple-100"
-                  }`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Phone className={`w-4 h-4 ${
-                          !isEmailVerified ? "text-gray-400" : isMobileVerified ? "text-emerald-600" : "text-[#742da7]"
-                        }`} />
-                        <span className="text-xs font-bold text-gray-900">2. Mobile Number OTP</span>
+                  {/* ACTIVE VERIFICATION CARD (Email OTP) */}
+                  {otpMethod === "email" && (
+                    <div className={`p-5 rounded-2xl border transition-all duration-300 ${
+                      isEmailVerified
+                        ? "bg-emerald-50/70 border-emerald-200"
+                        : "bg-purple-50/40 border-purple-100"
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            isEmailVerified ? "bg-emerald-100 text-emerald-700" : "bg-purple-100 text-[#742da7]"
+                          }`}>
+                            <Mail className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-gray-900 block">Email Verification Code</span>
+                            <span className="text-[11px] text-gray-500 font-medium">
+                              Sent to <span className="font-semibold text-gray-800">{email || "your email"}</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {isEmailVerified && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100/70 px-2.5 py-1 rounded-full">
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                            <span>Verified</span>
+                          </span>
+                        )}
                       </div>
 
                       {!isEmailVerified ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-500 bg-gray-200/60 px-2 py-0.5 rounded-full">
-                          <Lock className="w-3 h-3" />
-                          <span>Locked</span>
-                        </span>
-                      ) : isMobileVerified ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-full">
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Verified</span>
-                        </span>
+                        <div className="space-y-3 mt-4">
+                          <div className="flex justify-center gap-3">
+                            {emailOtp.map((digit, idx) => (
+                              <input
+                                key={`email-${idx}`}
+                                ref={emailOtpRefs[idx]}
+                                type="text"
+                                maxLength={1}
+                                value={digit}
+                                onChange={(e) => handleEmailOtpChange(idx, e.target.value)}
+                                className="w-12 h-12 text-center text-lg font-bold text-[#742da7] bg-white border border-gray-200 rounded-xl focus:border-[#742da7] focus:ring-2 focus:ring-purple-200 focus:outline-none shadow-sm transition-all"
+                              />
+                            ))}
+                          </div>
+
+                          {emailOtpError && (
+                            <p className="text-center text-xs text-red-600 font-medium">{emailOtpError}</p>
+                          )}
+
+                          <div className="flex items-center justify-between text-xs pt-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEmailOtp(["0", "0", "0", "0"]);
+                                setIsEmailVerified(true);
+                              }}
+                              className="text-[#742da7] font-semibold hover:underline cursor-pointer"
+                            >
+                              Resend Code
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleVerifyEmail}
+                              className="px-5 py-2 rounded-full bg-[#742da7] text-white font-semibold text-xs hover:bg-[#8538bc] transition-colors cursor-pointer shadow-sm"
+                            >
+                              Verify Email
+                            </button>
+                          </div>
+                        </div>
                       ) : (
-                        <span className="text-[11px] text-gray-500 font-medium">
-                          Sent to <span className="font-semibold text-gray-800">({phoneCode}) {phoneNumber || "Phone"}</span>
-                        </span>
+                        <div className="pt-2">
+                          <p className="text-xs text-emerald-800 font-semibold flex items-center gap-1.5">
+                            <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
+                            <span>Email verified successfully! You can now create your account below.</span>
+                          </p>
+                        </div>
                       )}
                     </div>
+                  )}
 
-                    {!isEmailVerified ? (
-                      <p className="text-xs text-gray-500 font-normal py-2 flex items-center gap-1.5">
-                        <Info className="w-3.5 h-3.5 shrink-0" />
-                        <span>Please complete Email OTP verification first to unlock this section.</span>
-                      </p>
-                    ) : !isMobileVerified ? (
-                      <div className="space-y-3 mt-3 animate-in fade-in-50 duration-200">
-                        <div className="flex justify-center gap-3">
-                          {mobileOtp.map((digit, idx) => (
-                            <input
-                              key={`mobile-${idx}`}
-                              ref={mobileOtpRefs[idx]}
-                              type="text"
-                              maxLength={1}
-                              value={digit}
-                              onChange={(e) => handleMobileOtpChange(idx, e.target.value)}
-                              className="w-11 h-12 text-center text-lg font-bold text-[#742da7] bg-white border border-gray-200 rounded-xl focus:border-[#742da7] focus:outline-none shadow-sm"
-                            />
-                          ))}
+                  {/* ACTIVE VERIFICATION CARD (Mobile OTP) */}
+                  {otpMethod === "mobile" && (
+                    <div className={`p-5 rounded-2xl border transition-all duration-300 ${
+                      isMobileVerified
+                        ? "bg-emerald-50/70 border-emerald-200"
+                        : "bg-purple-50/40 border-purple-100"
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            isMobileVerified ? "bg-emerald-100 text-emerald-700" : "bg-purple-100 text-[#742da7]"
+                          }`}>
+                            <Phone className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-gray-900 block">Mobile SMS Verification Code</span>
+                            <span className="text-[11px] text-gray-500 font-medium">
+                              Sent to <span className="font-semibold text-gray-800">({phoneCode}) {phoneNumber || "your phone"}</span>
+                            </span>
+                          </div>
                         </div>
 
-                        {mobileOtpError && (
-                          <p className="text-center text-xs text-red-600 font-medium">{mobileOtpError}</p>
+                        {isMobileVerified && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100/70 px-2.5 py-1 rounded-full">
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                            <span>Verified</span>
+                          </span>
                         )}
-
-                        <div className="flex items-center justify-between text-xs pt-1">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMobileOtp(["0", "0", "0", "0"]);
-                              setIsMobileVerified(true);
-                            }}
-                            className="text-[#742da7] font-semibold hover:underline cursor-pointer"
-                          >
-                            Fill mock (0000)
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleVerifyMobile}
-                            className="px-4 py-1.5 rounded-full bg-[#742da7] text-white font-semibold text-xs hover:bg-[#8538bc] transition-colors cursor-pointer"
-                          >
-                            Verify Mobile
-                          </button>
-                        </div>
                       </div>
-                    ) : (
-                      <p className="text-xs text-emerald-800 font-medium mt-1">
-                        ✓ Mobile number confirmed successfully. Ready to join!
-                      </p>
-                    )}
-                  </div>
+
+                      {!isMobileVerified ? (
+                        <div className="space-y-3 mt-4">
+                          <div className="flex justify-center gap-3">
+                            {mobileOtp.map((digit, idx) => (
+                              <input
+                                key={`mobile-${idx}`}
+                                ref={mobileOtpRefs[idx]}
+                                type="text"
+                                maxLength={1}
+                                value={digit}
+                                onChange={(e) => handleMobileOtpChange(idx, e.target.value)}
+                                className="w-12 h-12 text-center text-lg font-bold text-[#742da7] bg-white border border-gray-200 rounded-xl focus:border-[#742da7] focus:ring-2 focus:ring-purple-200 focus:outline-none shadow-sm transition-all"
+                              />
+                            ))}
+                          </div>
+
+                          {mobileOtpError && (
+                            <p className="text-center text-xs text-red-600 font-medium">{mobileOtpError}</p>
+                          )}
+
+                          <div className="flex items-center justify-between text-xs pt-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMobileOtp(["0", "0", "0", "0"]);
+                                setIsMobileVerified(true);
+                              }}
+                              className="text-[#742da7] font-semibold hover:underline cursor-pointer"
+                            >
+                              Resend Code
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleVerifyMobile}
+                              className="px-5 py-2 rounded-full bg-[#742da7] text-white font-semibold text-xs hover:bg-[#8538bc] transition-colors cursor-pointer shadow-sm"
+                            >
+                              Verify Mobile
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="pt-2">
+                          <p className="text-xs text-emerald-800 font-semibold flex items-center gap-1.5">
+                            <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
+                            <span>Mobile number verified successfully! You can now create your account below.</span>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Helper reassurance note */}
+                  <p className="text-[11px] text-gray-500 text-center flex items-center justify-center gap-1.5 pt-1">
+                    <Info className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <span>Verifying either your email or mobile phone completes your verification.</span>
+                  </p>
 
                 </div>
               )}
@@ -1011,8 +1225,13 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
               {step === 1 && (
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
-                  className="px-8 py-3 rounded-full text-sm font-semibold tracking-wide text-white bg-[#742da7] hover:bg-[#8538bc] shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 cursor-pointer"
+                  disabled={!isStep1Valid}
+                  onClick={handleProceedToOtp}
+                  className={`px-8 py-3 rounded-full text-sm font-semibold tracking-wide transition-all duration-200 ${
+                    isStep1Valid
+                      ? "text-white bg-[#742da7] hover:bg-[#8538bc] shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
+                      : "text-gray-400 bg-gray-150 cursor-not-allowed"
+                  }`}
                 >
                   OTP Next
                 </button>
@@ -1021,15 +1240,15 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
               {step === 2 && (
                 <button
                   type="button"
-                  disabled={!isEmailVerified || !isMobileVerified}
+                  disabled={!isAnyOtpVerified}
                   onClick={handleCompleteRegistration}
                   className={`px-8 py-3 rounded-full text-sm font-semibold tracking-wide transition-all duration-200 ${
-                    isEmailVerified && isMobileVerified
+                    isAnyOtpVerified
                       ? "text-white bg-[#742da7] hover:bg-[#8538bc] shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
                       : "text-gray-400 bg-gray-100 cursor-not-allowed"
                   }`}
                 >
-                  Complete &amp; Join Sfeer
+                  Create Account
                 </button>
               )}
             </div>
@@ -1037,6 +1256,25 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
           </div>
         </div>
       </div>
+
+      {/* OTP Alert Popup (Email sent alert / Mobile sent alert) */}
+      <OtpAlertPopup
+        isOpen={otpPopupState.isOpen}
+        stage={otpPopupState.stage}
+        destination={otpPopupState.destination}
+        onProceed={() => {
+          setOtpPopupState((prev) => ({ ...prev, isOpen: false }));
+          if (otpPopupState.stage === "email-sent") {
+            setStep(2);
+          }
+        }}
+        onClose={() => {
+          setOtpPopupState((prev) => ({ ...prev, isOpen: false }));
+          if (otpPopupState.stage === "email-sent") {
+            setStep(2);
+          }
+        }}
+      />
 
       {/* Notification Popup (Success / Error message) */}
       <NotificationPopup
@@ -1046,10 +1284,18 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
         message={popupState.message}
         memberId={popupState.memberId}
         actionText={popupState.type === "success" ? "Go to Dashboard" : "Try Again"}
+        onAction={() => {
+          setPopupState({ ...popupState, isOpen: false });
+          onClose();
+          if (popupState.type === "success") {
+            window.location.href = "/profile";
+          }
+        }}
         onClose={() => {
           setPopupState({ ...popupState, isOpen: false });
           if (popupState.type === "success") {
             onClose();
+            window.location.href = "/profile";
           }
         }}
       />

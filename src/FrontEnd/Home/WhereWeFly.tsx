@@ -43,11 +43,11 @@ export default function WhereWeFly() {
             </div>
           </div>
 
-          {/* Right Image (Airplane flying over Earth at night) */}
+          {/* Right Image (Riyadh Air aircraft in sky) */}
           <div className="relative group overflow-hidden rounded-[24px] sm:rounded-[32px] shadow-xl shadow-purple-950/10 border-0 aspect-[16/10] bg-gray-900">
             <Image
-              src="/images/where-we-fly.jpg"
-              alt="Riyadh Air aircraft flying over Earth at night"
+              src="/images/images (1).jpg"
+              alt="Riyadh Air aircraft flying in sky"
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -60,10 +60,10 @@ export default function WhereWeFly() {
 
         {/* Block 2: Manage your order */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
-          {/* Left Image (Laptop, passport and travel accessories on desk) */}
+          {/* Left Image (Riyadh Air aircraft in flight) */}
           <div className="order-2 lg:order-1 relative group overflow-hidden rounded-[24px] sm:rounded-[32px] shadow-xl shadow-purple-950/10 border-0 aspect-[16/10] bg-gray-100">
             <Image
-              src="/images/manage-order.jpg"
+              src="/images/images.jpg"
               alt="Manage your Riyadh Air flight booking"
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
