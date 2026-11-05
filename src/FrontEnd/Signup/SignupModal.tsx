@@ -334,7 +334,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
         
         {/* Modal Window Container */}
         <div
-          className="relative w-full max-w-[960px] bg-white rounded-[28px] sm:rounded-[36px] overflow-hidden shadow-2xl border-0 flex flex-col md:flex-row h-auto max-h-[92vh] md:h-[640px] animate-in zoom-in-95 duration-200"
+          className="relative w-full max-w-[1040px] bg-white rounded-[28px] sm:rounded-[36px] overflow-hidden shadow-2xl border-0 flex flex-col md:flex-row h-auto max-h-[92vh] md:h-[640px] animate-in zoom-in-95 duration-200"
           onClick={(e) => {
             e.stopPropagation();
             setIsTitleOpen(false);
@@ -346,16 +346,16 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps) {
           }}
         >
           {/* ========================================================= */}
-          {/* LEFT SIDE: Sfeer Brand Image (1076x1462 Perfect Fit)       */}
+          {/* LEFT SIDE: Sfeer Brand Image (1137x1383 Exact Ratio Fit)   */}
           {/* ========================================================= */}
-          <div className="relative hidden md:block w-[471px] shrink-0 bg-[#fa921d] h-full overflow-hidden">
+          <div className="relative hidden md:block w-[528px] shrink-0 bg-[#fa921d] h-full overflow-hidden">
             <Image
               src={leftImageSrc}
               alt="Sfeer Riyadh Air Member"
               fill
               className="object-cover object-left-top transition-all duration-500"
               priority
-              sizes="471px"
+              sizes="528px"
             />
           </div>
 
